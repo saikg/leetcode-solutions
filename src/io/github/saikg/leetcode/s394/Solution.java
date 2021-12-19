@@ -1,71 +1,60 @@
-//package io.github.saikg.leetcode.s394;
+package io.github.saikg.leetcode.s394;
+
+import java.util.Stack;
 
 public class Solution {
 
-    StringBuilder stringBuilder = new StringBuilder();
-
     public String decodeString(String s) {
-        return decodeString(s, 0);
-    }
+        int n = s.length();
+        Stack<Character> buffer = new Stack<>();
+        for (int i = 0; i < n; i++) {
+            char ch = s.charAt(i);
+            if (ch != ']') {
+                buffer.push(ch);
+                continue;
+            }
 
-    private String decodeString(String s, int id) {
-        System.out.println("id = " + id);
-        if (id >= s.length()) {
-            return "";
+            StringBuilder sb = new StringBuilder();
+            while (buffer.peek() != '[') {
+                sb.append(buffer.pop());
+            }
+            buffer.pop(); // pop [
+
+            StringBuilder multiplierString = new StringBuilder();
+            while (!buffer.isEmpty() && isDigit(buffer.peek())) {
+                multiplierString.append(buffer.pop());
+            }
+            int multiplier = Integer.parseInt(multiplierString.reverse().toString());
+
+            String str = sb.toString();
+            for (int j = 0; j < multiplier-1; j++) {
+                sb.append(str);
+            }
+
+            for (char j: sb.reverse().toString().toCharArray()) {
+                buffer.push(j);
+            }
         }
 
-        char ch = s.charAt(id);
-        if (isLetter(ch)) {
-            String t = readString(s, id);
-            id += t.length();
-            return t + decodeString(s, id);
+        StringBuilder decodedString = new StringBuilder();
+        while (!buffer.isEmpty()) {
+            decodedString.append(buffer.pop());
         }
-
-        int multiplier = readNumber(s, id);
-        for (long i = 1; i <= multiplier; i *= 10) {
-            id++;
-        }
-        id++; // opening bracket
-        String t = decodeString(s, id);
-        id++; // closing bracket
-        return repeatedString(t, multiplier) + decodeString(s, id);
-    }
-
-    private boolean isLetter(char ch) {
-        return between('a', 'z', ch);
+        return decodedString.reverse().toString();
     }
 
     private boolean isDigit(char ch) {
-        return between('0', '9', ch);
+        return (ch - '0' >= 0) && ('9' - ch >= 0);
     }
 
-    private boolean between(char low, char high, char ch) {
-        return ch - low >= 0 && high - ch >= 0;
+    private boolean isLetter(char ch) {
+        return (ch - 'a' >= 0) && ('z' - ch >= 0);
     }
 
-    private int readNumber(String s, int ip) {
-        int ans = 0;
-        while (ip < s.length() && isDigit(s.charAt(ip))) {
-            ans *= 10;
-            ans += s.charAt(ip++) - '0';
-        }
-        return ans;
-    }
-
-    private String readString(String s, int ip) {
-        StringBuilder stringBuilder = new StringBuilder();
-        while (ip < s.length() && isLetter(s.charAt(ip))) {
-            stringBuilder.append(s.charAt(ip++));
-        }
-        System.out.println("stringBuilder.toString() = " + stringBuilder.toString());
-        return stringBuilder.toString();
-    }
-
-    private String repeatedString(String t, int m) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < m; i++) {
-            stringBuilder.append(t);
-        }
-        return stringBuilder.toString();
+    public static void main(String[] args) {
+        String testInput = "100[leetcode]";
+        Solution solution = new Solution();
+        String ans = solution.decodeString(testInput);
+        System.out.println("ans = " + ans);
     }
 }
