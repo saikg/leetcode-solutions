@@ -1,41 +1,41 @@
 package io.github.saikg.leetcode.s91;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Solution {
-
-    List<String> possibleDecodings;
 
     public int numDecodings(String s) {
         if (s.charAt(0) == '0') {
             return 0;
         }
 
-        possibleDecodings = new ArrayList<>();
-        backtrack(0, s, new StringBuilder());
-        return possibleDecodings.size();
-    }
+        int n = s.length();
+        int[] dp = new int[n];
+        dp[0] = s.charAt(0) == '0' ? 0 : 1;
 
-    private void backtrack(int k, String s, StringBuilder decoding) {
-        if (k == s.length()) {
-            possibleDecodings.add(decoding.toString());
-            return;
+        for (int i = 1; i < n; i++) {
+            int curr = s.charAt(i) - '0';
+            if (isValid(curr)) {
+                dp[i] += dp[i-1];
+            }
+
+            int prev = s.charAt(i-1) - '0';
+            if (prev == 0) {
+                continue;
+            }
+
+            int offset = prev * 10 + curr;
+            if (isValid(offset)) {
+                dp[i] += i > 1 ? dp[i-2] : 1;
+            }
         }
 
-        if (s.charAt(k) == '0') {
-            return;
-        }
-
-        decoding.append(getCharForOffset(s.charAt(k)));
-        backtrack(k + 1, s, decoding);
+        return dp[n-1];
     }
 
-    private char getCharForOffset(int offset) {
-        return (char)('a' + (offset - 1));
+    private boolean isValid(int v) {
+        return 1 <= v && v <= 26;
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().getCharForOffset(2));
+        System.out.println(new Solution().numDecodings("21021"));
     }
 }
