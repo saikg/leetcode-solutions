@@ -1,53 +1,52 @@
 package io.github.saikg.leetcode.s1146;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SnapshotArray {
 
-    int n, snap = 0;
-    List<List<int[]>> versions;
+    int n, snapId;
+    List<List<int[]>> data;
 
     public SnapshotArray(int length) {
         n = length;
-        versions = new ArrayList<>();
+        snapId = 0;
+        data = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            versions.add(new ArrayList<>());
+            data.add(new ArrayList<>());
+            data.get(i).add(new int[]{snapId, 0});
         }
     }
 
     public void set(int index, int val) {
-        List<int[]> p = versions.get(index);
-        if (!p.isEmpty() && p.get(p.size() - 1)[0] == snap) {
-            p.get(p.size() - 1)[1] = val;
+        List<int[]> versions = data.get(index);
+        int k = versions.size();
+        int[] lastUpdated = versions.get(k-1);
+        if (lastUpdated[0] == snapId) {
+            lastUpdated[1] = val;
         } else {
-            versions.get(index).add(new int[]{snap, val});
+            versions.add(new int[]{snapId, val});
         }
     }
 
     public int snap() {
-        return snap++;
+        return snapId++;
     }
 
     public int get(int index, int snap_id) {
-        List<int[]> p = versions.get(index);
-        if (p.isEmpty() || p.get(0)[0] > snap_id) {
-            return 0;
-        }
-
-        int low = 0, high = p.size() - 1;
-        while (low < high) {
+        List<int[]> versions = data.get(index);
+        int low = 0, high = versions.size() - 1;
+        while (low <= high) {
             int mid = (low + high) / 2;
-            int v = p.get(mid)[0];
-
-            if (v ==  snap_id) {
-                return p.get(mid)[1];
-            } else if (v < snap_id) {
-                low = mid;
+            int[] version = versions.get(mid);
+            if (version[0] == snap_id) {
+                return version[1];
+            } else if (version[0] < snap_id) {
+                low = mid + 1;
             } else {
                 high = mid - 1;
             }
         }
-
-        return p.get(low)[1];
+        return versions.get(high)[1];
     }
 }
