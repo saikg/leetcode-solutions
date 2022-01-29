@@ -9,6 +9,8 @@ def get_package_name(problem_id):
 def setup_template(fp, problem_id):
     fp.write(f"package io.github.saikg.leetcode.s{problem_id};\n")
     fp.write('\n')
+    fp.write('import java.util.*;\n')
+    fp.write('\n')
     fp.write('public class Solution {\n')
     fp.write('\n}')
 

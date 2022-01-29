@@ -2,70 +2,38 @@ package io.github.saikg.leetcode.s652;
 
 import io.github.saikg.leetcode.common.TreeNode;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Solution {
-
-    Map<TreeNode, TreeNode> childToParentMap;
-
-    List<TreeNode> leaves;
+    private Map<Integer, Integer> seenSubtrees;
+    private List<TreeNode> duplicates;
 
     public List<TreeNode> findDuplicateSubtrees(TreeNode root) {
-        childToParentMap = new HashMap<>();
-        leaves = new ArrayList<>();
-        populateParentsMap(root, null);
-
-        List<TreeNode> duplicates = new ArrayList<>();
-
-        Map<Integer, List<TreeNode>> candidates = new HashMap<>();
-        for (TreeNode node: leaves) {
-            candidates.computeIfAbsent(node.val, v -> new ArrayList<>()).add(node);
-        }
-        candidates = candidates.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().size() > 1)
-                .collect(Collectors.toMap(v -> v.getKey(), v -> v.getValue()));
-
-        for (int key: candidates.keySet()) {
-            List<TreeNode> nodes = candidates.get(key);
-            int numNodes = nodes.size();
-
-            for (int i = 0; i < numNodes; i++) {
-                for (int j = i + 1; j < numNodes; j++) {
-                    if (matchTrees(nodes.get(i), nodes.get(j))) {
-
-                    }
-                }
-            }
-        }
-
+        seenSubtrees = new HashMap<>();
+        duplicates = new ArrayList<>();
+        dfs(root);
         return duplicates;
     }
 
-    void populateParentsMap(TreeNode node, TreeNode parent) {
-        if (node == null) return;
-
-        childToParentMap.put(node, parent);
-        if (node.left == null && node.right == null) {
-            leaves.add(node);
-            return;
+    private String dfs(TreeNode node) {
+        if (node == null) {
+            return "N";
         }
 
-        populateParentsMap(node.left, node);
-        populateParentsMap(node.right, node);
+        StringBuilder encodedTree = new StringBuilder();
+        encodedTree.append(node.val).append(".");
+        encodedTree.append(dfs(node.left)).append(".");
+        encodedTree.append(dfs(node.right)).append(".");
+
+        int hashCode = encodedTree.toString().hashCode();
+        seenSubtrees.put(hashCode, seenSubtrees.getOrDefault(hashCode, 0) + 1);
+
+        if (seenSubtrees.get(hashCode) == 2) {
+            duplicates.add(node);
+        }
+        return encodedTree.toString();
     }
-
-    boolean matchTrees(TreeNode rootA, TreeNode rootB) {
-        if (rootA == null ^ rootB == null) {
-            return false;
-        }
-        if (rootA == null) {
-            return true;
-        }
-        return rootA.val == rootB.val &&
-                matchTrees(rootA.left, rootB.left) &&
-                matchTrees(rootA.right, rootB.right);
-    }
-
 }
